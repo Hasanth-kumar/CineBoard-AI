@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS input_records (
     raw_input TEXT NOT NULL,
     input_length INTEGER NOT NULL,
     detected_language VARCHAR(10),
-    language_confidence VARCHAR(10),
+    language_confidence VARCHAR(20),
     translation_result JSONB,
     status VARCHAR(50) DEFAULT 'pending',
     current_phase VARCHAR(50),
@@ -53,6 +53,7 @@ CREATE TABLE IF NOT EXISTS processing_statuses (
     phase_data JSONB,
     error_message TEXT,
     error_details JSONB,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     started_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     completed_at TIMESTAMP WITH TIME ZONE,
     duration_seconds INTEGER

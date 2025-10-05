@@ -2,7 +2,7 @@
 Redis configuration and connection management
 """
 
-import aioredis
+import redis.asyncio as aioredis
 import structlog
 from typing import Optional
 

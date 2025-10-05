@@ -20,12 +20,13 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "postgresql://user:password@localhost:5432/input_processing"
     REDIS_URL: str = "redis://localhost:6379/0"
     
-    # API Keys
+    # API Keys - MVP 2-layer system (Google + NLLB)
     GOOGLE_TRANSLATE_API_KEY: Optional[str] = None
-    HUGGINGFACE_API_KEY: Optional[str] = None
+    HUGGINGFACE_API_KEY: Optional[str] = None  # Used for NLLB model
     
-    # Model Endpoints
-    INDIC_TRANS2_ENDPOINT: Optional[str] = None  # HuggingFace Inference API or self-hosted
+    # Model Endpoints - MVP Configuration
+    # TODO (Production Phase): Re-enable IndicTrans2 as Fallback Layer 1
+    # INDIC_TRANS2_ENDPOINT: Optional[str] = None  # HuggingFace Inference API or self-hosted
     NLLB_ENDPOINT: Optional[str] = None  # HuggingFace Inference API or self-hosted
     
     # Security
@@ -53,13 +54,19 @@ class Settings(BaseSettings):
     CACHE_TTL_TRANSLATION: int = 3600  # 1 hour
     CACHE_TTL_LANGUAGE_DETECTION: int = 1800  # 30 minutes
     CACHE_TTL_VALIDATION: int = 300  # 5 minutes
+    CACHE_TTL_INPUT_RECORD: int = 3600  # 1 hour
+    CACHE_TTL_PROCESSING_STATUS: int = 1800  # 30 minutes
+    CACHE_TTL_STATUS_SUMMARY: int = 300  # 5 minutes
     
     # Input Validation Configuration
     MIN_INPUT_LENGTH: int = 10
     MAX_INPUT_LENGTH: int = 2000
-    ALLOWED_LANGUAGES: List[str] = [
-        "en", "hi", "te", "ta", "bn", "gu", "mr", "kn", "ml", "or", "pa"
-    ]
+    ALLOWED_LANGUAGES: str = "en,hi,te,ta,bn,gu,mr,kn,ml,or,pa"
+    
+    @property
+    def allowed_languages_list(self) -> List[str]:
+        """Convert comma-separated string to list"""
+        return [lang.strip() for lang in self.ALLOWED_LANGUAGES.split(",")]
     
     # Monitoring Configuration
     PROMETHEUS_PORT: int = 9090
@@ -70,12 +77,15 @@ class Settings(BaseSettings):
         "violence", "explicit", "hate_speech", "spam", "malicious"
     ]
     
-    # Translation Configuration
+    # Translation Configuration - MVP 2-layer system
+    # Active: Google Translate → NLLB-200
+    # TODO (Production Phase): Re-enable IndicTrans2 as Fallback Layer 1
+    # Future 3-layer system: Google → IndicTrans2 → NLLB
     DEFAULT_TARGET_LANGUAGE: str = "en"
     TRANSLATION_CONFIDENCE_THRESHOLD: float = 0.8
     
     # Language Detection Configuration
-    LANGUAGE_DETECTION_CONFIDENCE_THRESHOLD: float = 0.8
+    LANGUAGE_DETECTION_CONFIDENCE_THRESHOLD: float = 0.1
     
     class Config:
         env_file = ".env"

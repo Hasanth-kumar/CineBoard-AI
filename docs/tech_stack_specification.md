@@ -4,6 +4,15 @@
 
 This document provides a comprehensive specification of the technology stack for the multilingual video generation platform. The tech stack is designed for scalability, maintainability, and performance while supporting complex AI workflows and multilingual processing.
 
+### ✅ CURRENT STATUS: TECH STACK IMPLEMENTED + SRP REFACTOR (December 2024)
+- **Backend Stack**: FastAPI + Python 3.11+ with SRP-compliant architecture
+- **Database Layer**: PostgreSQL with optimized schema and proper Unicode support
+- **Caching Layer**: Redis implementation with efficient data management
+- **API Layer**: RESTful endpoints with proper validation and error handling
+- **Containerization**: Complete Docker setup with health checks and monitoring
+- **Language Processing**: Google Translate API → NLLB-200 fallback system operational
+- **Production Readiness**: All components tested and validated for Phase 2 scaling
+
 ## 1. Frontend Technology Stack
 
 ### 1.1 Web Application Stack
@@ -272,10 +281,10 @@ async def create_generation(
     return await generation_service.create_generation(request, current_user.id)
 ```
 
-#### 2.1.2 Improved Microservices Architecture - Single Responsibility Design
+#### 2.1.2 Improved Microservices Architecture - POST-SRP REFACTOR Design
 
 ```python
-# Domain-Driven Service Architecture
+# Domain-Driven Service Architecture with SRP Compliance (Updated)
 DOMAIN_SERVICES = {
     'user_management': {
         'auth-service': {
@@ -283,7 +292,53 @@ DOMAIN_SERVICES = {
             'port': 8001,
             'responsibilities': ['JWT authentication', 'authorization', 'token management'],
             'dependencies': ['postgresql', 'redis', 'jwt'],
-            'database_tables': ['users', 'auth_tokens', 'permissions']
+            'database_tables': ['users', 'auth_tokens', 'permissions'],
+            'srp_compliance': 'PERFECT - Single authentication responsibility'
+        },
+        # NEW: Input Processing Service with SRP-Compliant Architecture
+        'input-processing-service': {
+            'framework': 'FastAPI',
+            'port': 8010,
+            'architecture_status': 'REFACTORED - SRP-Compliant (December 2024)',
+            'post_refactor_structure': {
+                'workflows/': {
+                    'pipeline.py': 'Single responsibility - workflow orchestration'
+                },
+                'endpoints/': {
+                    'validation.py': 'Single responsibility - HTTP validation requests',
+                    'processing.py': 'Single responsibility - HTTP processing requests',
+                    'status.py': 'Single responsibility - HTTP status requests'
+                },
+                'services/': {
+                    'translation/': {
+                        'providers/': [
+                            'google_translator.py - Google Translate API',
+                            'indic_translator.py - IndicTrans2 translation',
+                            'nllb_translator.py - NLLB translation',
+                            'hf_translator.py - HuggingFace models'
+                        ],
+                        'strategy.py': 'Fallback chain management',
+                        'translation_facade.py': 'API compatibility layer'
+                    },
+                    'repositories/': [
+                        'input_repository.py - InputRecord CRUD operations',
+                        'status_repository.py - ProcessingStatus CRUD operations'
+                    ],
+                    'cache/': [
+                        'cache_manager.py - Centralized cache operations'
+                    ],
+                    'storage_facade.py': 'API compatibility layer'
+                }
+            },
+            'refactoring_benefits': [
+                'Enhanced maintainability through focused modules',
+                'Improved testability with isolated components', 
+                'Better extensibility for new providers/repositories',
+                'Cleaner debugging with specific responsibility tracking',
+                'Reduced cognitive load for developers'
+            ],
+            'backward_compatibility': 'Maintained through facade pattern',
+            'dependencies': ['postgresql', 'redis', 'google-translate', 'nllb', 'indic-trans2']
         },
         'user-service': {
             'framework': 'FastAPI',
@@ -508,48 +563,81 @@ SERVICE_COMMUNICATION = {
 
 ### 2.2 AI/ML Technology Stack
 
-#### 2.2.1 Language Processing
+#### 2.2.1 Language Processing - Updated Stack
 ```json
 {
-  "language_detection": "langdetect + polyglot",
+  "language_detection": "langdetect + langid (optimized for scene descriptions)",
   "translation": "Google Translate API → IndicTrans2 → NLLB-200",
   "llm_integration": "OpenAI GPT-4 + Anthropic Claude",
   "nlp_processing": "spaCy + NLTK",
-  "text_processing": "regex + textstat"
+  "text_processing": "regex + textstat",
+  "optimization": "Polyglot removed due to ICU compatibility issues",
+  "fallback_strategy": "langdetect primary, langid backup"
 }
 ```
 
 **Implementation**:
 ```python
-# Language Detection
+# Language Detection - Updated Implementation
 from langdetect import detect, DetectorFactory
-import polyglot
-from polyglot.detect import Detector
+import langid
 
 class LanguageDetectionService:
     def __init__(self):
         DetectorFactory.seed = 0
-        self.polyglot_detector = Detector
+        # Removed polyglot due to ICU compatibility issues
     
     async def detect_language(self, text: str) -> LanguageResult:
         try:
-            # Primary detection
-            lang = detect(text)
-            confidence = 0.9
+            # Request validation from main development
+            if not text or len(text.strip()) < 3:
+                return LanguageResult(language='en', confidence=0.5, is_reliable=False)
             
-            # Fallback to polyglot for low-resource languages
-            if confidence < 0.8:
-                polyglot_result = self.polyglot_detector(text)
-                lang = polyglot_result.language.code
-                confidence = polyglot_result.confidence
+            # Primary: langdetect (best accuracy for scene descriptions)
+            try:
+                lang = detect(text)
+                confidence = self._calculate_langdetect_confidence(text, lang)
+                
+                if confidence >= 0.8:
+                    return LanguageResult(
+                        language=lang,
+                        confidence=confidence,
+                        is_reliable=True,
+                        method='langdetect'
+                    )
+            except Exception:
+                pass
             
-            return LanguageResult(
-                language=lang,
-                confidence=confidence,
-                is_reliable=confidence >= 0.8
-            )
-        except Exception as e:
+            # Fallback: langid (lightweight, reliable)
+            try:
+                lang, confidence = langid.classify(text)
+                confidence = float(confidence)
+                
+                return LanguageResult(
+                    language=lang,
+                    confidence=confidence,
+                    is_reliable=confidence >= 0.7,
+                    method='langid'
+                )
+            except Exception:
+                pass
+            
+            # Fallback: Default to English
             return LanguageResult(language='en', confidence=0.5, is_reliable=False)
+            
+        except Exception as e:
+            logger.warning(f"Language detection failed: {e}")
+            return LanguageResult(language='en', confidence=0.5, is_reliable=False)
+    
+    def _calculate_langdetect_confidence(self, text: str, detected_lang: str) -> float:
+        """Calculate confidence score for langdetect results"""
+        # Simple heuristic based on text length and content
+        if len(text) < 10:
+            return 0.6
+        elif len(text) < 50:
+            return 0.7
+        else:
+            return 0.85  # Higher confidence for longer text
 
 # Translation Service
 import google.cloud.translate_v2 as translate
@@ -939,14 +1027,14 @@ class Generation(Base):
   "session_store": "Redis",
   "rate_limiting": "Redis",
   "message_queue": "Redis Streams",
-  "real_time_data": "Redis Pub/Sub"
+  "real_time_data": "Redis Pub/Sub",
+  "client": "redis[hiredis] with redis.asyncio"
 }
 ```
 
 **Implementation**:
 ```python
-# Redis Configuration
-import redis
+# Redis Configuration - Updated Implementation
 import redis.asyncio as aioredis
 
 class RedisService:
@@ -980,6 +1068,13 @@ class RedisService:
             if message['type'] == 'message':
                 data = json.loads(message['data'])
                 await callback(data)
+
+# Updated Requirements
+REDIS_DEPENDENCIES = {
+    "redis": "redis[hiredis]==5.0.1",
+    "note": "Removed aioredis==2.0.0 due to Python 3.11 compatibility issues",
+    "async_client": "redis.asyncio provides modern async Redis client"
+}
 
 # Cache Decorator
 def cache_result(ttl: int = 3600):

@@ -6,7 +6,7 @@ import re
 import structlog
 from typing import List, Dict, Any
 from sqlalchemy.ext.asyncio import AsyncSession
-import aioredis
+import redis.asyncio as aioredis
 
 from app.core.config import settings
 from app.core.exceptions import ValidationError, ContentPolicyError

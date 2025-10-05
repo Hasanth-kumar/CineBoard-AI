@@ -1,15 +1,14 @@
 """
-Language detection service using langdetect + polyglot as primary with Google Translate API fallback
+Language detection service using langdetect + langid as primary with Google Translate API fallback
 """
 
 import structlog
 from typing import Dict, Any, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
-import aioredis
+import redis.asyncio as aioredis
 from langdetect import detect, DetectorFactory, LangDetectException
-import polyglot
-from polyglot.detect import Detector
-import google.cloud.translate_v2 as translate
+import langid
+import requests
 
 from app.core.config import settings
 from app.core.exceptions import LanguageDetectionError
@@ -30,17 +29,9 @@ class LanguageDetectionService:
         self.redis = redis
         self.cache_service = CacheService(redis)
         
-        # Initialize polyglot detector
-        self.polyglot_detector = Detector
-        
-        # Initialize Google Translate client as fallback if API key is available
-        self.google_client = None
-        if settings.GOOGLE_TRANSLATE_API_KEY:
-            try:
-                self.google_client = translate.Client()
-                logger.info("Google Translate client initialized as fallback")
-            except Exception as e:
-                logger.warning("Failed to initialize Google Translate client", error=str(e))
+        # Initialize Google Translate API endpoint for fallback
+        self.google_api_key = settings.GOOGLE_TRANSLATE_API_KEY
+        self.google_base_url = "https://translation.googleapis.com/language/translate/v2/detect"
     
     async def detect_language(self, text: str) -> LanguageDetectionResult:
         """
@@ -73,13 +64,17 @@ class LanguageDetectionService:
                 
                 return result
         except Exception as e:
-            logger.warning("langdetect failed", error=str(e))
+            # Log as info for expected failures (non-Latin scripts, short text)
+            if "Non-Latin script detected" in str(e) or "Text too short" in str(e):
+                logger.info("langdetect skipped", reason=str(e))
+            else:
+                logger.warning("langdetect failed", error=str(e))
         
-        # Try secondary detection method (polyglot)
+        # Try secondary detection method (langid)
         try:
-            result = await self._detect_with_polyglot(text)
+            result = await self._detect_with_langid(text)
             if result.confidence >= settings.LANGUAGE_DETECTION_CONFIDENCE_THRESHOLD:
-                logger.info("Language detected with polyglot", 
+                logger.info("Language detected with langid", 
                            language=result.language, 
                            confidence=result.confidence)
                 
@@ -92,10 +87,10 @@ class LanguageDetectionService:
                 
                 return result
         except Exception as e:
-            logger.warning("polyglot detection failed", error=str(e))
+            logger.warning("langid detection failed", error=str(e))
         
         # Try fallback method (Google Translate)
-        if self.google_client:
+        if self.google_api_key:
             try:
                 result = await self._detect_with_google_translate(text)
                 logger.info("Language detected with Google Translate", 
@@ -130,8 +125,21 @@ class LanguageDetectionService:
             # Clean text for better detection
             cleaned_text = self._clean_text_for_detection(text)
             
+            # Skip langdetect for very short text or non-Latin scripts
+            if len(cleaned_text) < 10:
+                raise LanguageDetectionError("Text too short for langdetect")
+            
+            # Check if text contains non-Latin characters (likely Indic languages)
+            # langdetect has poor support for Hindi/Unicode text
+            if self._contains_non_latin_script(cleaned_text):
+                raise LanguageDetectionError("Non-Latin script detected, skipping langdetect")
+            
             # Detect language
-            detected_lang = detect(cleaned_text)
+            try:
+                detected_lang = detect(cleaned_text)
+            except LangDetectException as e:
+                # Re-raise with our custom message
+                raise LanguageDetectionError(f"Non-Latin script detected, skipping langdetect: {str(e)}")
             
             # Calculate confidence (langdetect doesn't provide confidence directly)
             # We'll use a heuristic based on text length and language support
@@ -158,17 +166,17 @@ class LanguageDetectionService:
         except Exception as e:
             raise LanguageDetectionError(f"Language detection error: {str(e)}")
     
-    async def _detect_with_polyglot(self, text: str) -> LanguageDetectionResult:
-        """Detect language using polyglot library"""
+    async def _detect_with_langid(self, text: str) -> LanguageDetectionResult:
+        """Detect language using langid library"""
         try:
             # Clean text for better detection
             cleaned_text = self._clean_text_for_detection(text)
             
-            # Detect language with polyglot
-            polyglot_result = self.polyglot_detector(cleaned_text)
+            # Detect language with langid
+            langid_result = langid.classify(cleaned_text)
             
-            detected_lang = polyglot_result.language.code
-            confidence = polyglot_result.confidence
+            detected_lang = langid_result[0]
+            confidence = langid_result[1]
             
             # Check if language is supported
             is_reliable = (
@@ -187,19 +195,31 @@ class LanguageDetectionService:
             )
             
         except Exception as e:
-            raise LanguageDetectionError(f"polyglot detection failed: {str(e)}")
+            raise LanguageDetectionError(f"langid detection failed: {str(e)}")
     
     async def _detect_with_google_translate(self, text: str) -> LanguageDetectionResult:
-        """Detect language using Google Translate API"""
+        """Detect language using Google Translate REST API"""
         try:
             # Clean text for better detection
             cleaned_text = self._clean_text_for_detection(text)
             
-            # Detect language
-            result = self.google_client.detect_language(cleaned_text)
+            # Detect language using REST API
+            params = {
+                'key': self.google_api_key,
+                'q': cleaned_text
+            }
             
-            detected_lang = result['language']
-            confidence = result.get('confidence', 0.8)
+            response = requests.post(self.google_base_url, params=params, timeout=30)
+            response.raise_for_status()
+            
+            result = response.json()
+            
+            if 'data' not in result or 'detections' not in result['data']:
+                raise LanguageDetectionError("Invalid API response format")
+            
+            detection = result['data']['detections'][0][0]
+            detected_lang = detection['language']
+            confidence = detection.get('confidence', 0.8)
             
             # Check if language is supported
             is_reliable = (
@@ -219,6 +239,10 @@ class LanguageDetectionService:
     
     def _clean_text_for_detection(self, text: str) -> str:
         """Clean text for better language detection"""
+        # For very short text, minimal cleaning to preserve features
+        if len(text) < 20:
+            return text.strip()
+        
         # Remove extra whitespace
         cleaned = ' '.join(text.split())
         
@@ -232,6 +256,39 @@ class LanguageDetectionService:
         cleaned = re.sub(r'[?]{3,}', '?', cleaned)
         
         return cleaned.strip()
+    
+    def _contains_non_latin_script(self, text: str) -> bool:
+        """Check if text contains non-Latin scripts (e.g., Hindi, Arabic, Chinese)"""
+        # Check for common non-Latin Unicode ranges
+        for char in text:
+            # Hindi/Devanagari script (U+0900-U+097F)
+            if '\u0900' <= char <= '\u097F':
+                return True
+            # Arabic script (U+0600-U+06FF)
+            elif '\u0600' <= char <= '\u06FF':
+                return True
+            # Chinese characters (U+4E00-U+9FFF)
+            elif '\u4E00' <= char <= '\u9FFF':
+                return True
+            # Other Indic scripts
+            elif '\u0980' <= char <= '\u09FF':  # Bengali
+                return True
+            elif '\u0A00' <= char <= '\u0A7F':  # Gurmukhi
+                return True
+            elif '\u0A80' <= char <= '\u0AFF':  # Gujarati
+                return True
+            elif '\u0B00' <= char <= '\u0B7F':  # Oriya
+                return True
+            elif '\u0B80' <= char <= '\u0BFF':  # Tamil
+                return True
+            elif '\u0C00' <= char <= '\u0C7F':  # Telugu
+                return True
+            elif '\u0C80' <= char <= '\u0CFF':  # Kannada
+                return True
+            elif '\u0D00' <= char <= '\u0D7F':  # Malayalam
+                return True
+        
+        return False
     
     def _calculate_confidence(self, text: str, language: str) -> float:
         """Calculate confidence score for language detection"""

@@ -9,7 +9,7 @@ from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
 import uvicorn
 import structlog
-from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
+from prometheus_client import Counter, generate_latest, CONTENT_TYPE_LATEST
 from prometheus_client import make_asgi_app
 
 from app.core.config import settings
@@ -40,9 +40,7 @@ structlog.configure(
 
 logger = structlog.get_logger()
 
-# Prometheus metrics
-REQUEST_COUNT = Counter('http_requests_total', 'Total HTTP requests', ['method', 'endpoint', 'status'])
-REQUEST_DURATION = Histogram('http_request_duration_seconds', 'HTTP request duration', ['method', 'endpoint'])
+# Prometheus metrics (only unique ones not defined in middleware)
 INPUT_PROCESSING_COUNT = Counter('input_processing_total', 'Total input processing requests', ['status', 'language'])
 
 # Create FastAPI application

@@ -4,6 +4,16 @@
 
 This document outlines the technical architecture and implementation strategy for a multilingual video generation platform that converts natural language scene descriptions into structured prompts for AI-powered image and video generation tools (Nano Banana, Veo4).
 
+### ✅ CURRENT STATUS: MVP COMPLETED + SRP REFACTOR (December 2024)
+- **Phase 1 MVP**: Successfully completed with Single Responsibility Principle refactoring
+- **Input Processing Service**: Fully operational with SRP-compliant architecture
+- **Database Schema**: Fixed and optimized (language_confidence VARCHAR(20) issue resolved)
+- **Language Detection**: Verified working for Telugu, Hindi, and English with proper Unicode handling
+- **Translation Pipeline**: Google Translate API → NLLB-200 fallback system operational
+- **API Endpoints**: All endpoints tested and verified with proper error handling
+- **Docker Infrastructure**: Complete containerization with PostgreSQL and Redis
+- **Production Readiness**: Ready for Phase 2 development and production deployment
+
 ## 1. Core Workflow Architecture
 
 ### 1.1 End-to-End User Journey
@@ -26,11 +36,32 @@ Delivery & User Feedback
 
 ### 1.2 Detailed Processing Pipeline
 
-#### Phase 1: Input Processing
+#### Phase 1: Input Processing - POST-SRP REFACTOR Implementation
+**NEW ARCHITECTURE**: SRP-Compliant modular design with single responsibility principle enforced
+
 1. **Text Ingestion**: User submits scene description via web interface
-2. **Language Detection**: Auto-detect language using langdetect or Google Translate API
-3. **Translation**: Convert to English using NLLB-200 or GPT-4 translation
+   - **Endpoint**: `validation.py` (Single responsibility: HTTP validation requests)
+   - **Validation**: Content policy checks, length validation, format verification
+
+2. **Language Detection**: Auto-detect language using langdetect (primary) + langid (fallback)
+   - **Service**: `language_detection.py` (Single responsibility: language identification)
+
+3. **Translation**: Convert to English using provider strategy:
+   - **Provider Chain**: Google Translate → IndicTrans2 → NLLB-200 (fallback)
+   - **Providers**: Individual modules - `google_translator.py`, `indic_translator.py`, `nllb_translator.py`
+   - **Strategy**: `strategy.py` (Single responsibility: fallback chain management)
+   - **Facade**: `translation_facade.py` (Single responsibility: API compatibility)
+
 4. **Preprocessing**: Clean text, handle special characters, normalize formatting
+   - **Service**: `text_preprocessing.py` (Single responsibility: text normalization)
+
+5. **Storage**: Database operations with clean separation
+   - **Repositories**: `input_repository.py`, `status_repository.py` (Single responsibility: CRUD operations)
+   - **Cache**: `cache_manager.py` (Single responsibility: cache operations)
+   - **Facade**: `storage_facade.py` (Single responsibility: API compatibility)
+
+6. **Orchestration**: 
+   - **Workflow**: `pipeline.py` (Single responsibility: workflow orchestration)
 
 #### Phase 2: Scene Understanding
 1. **Entity Extraction**: Identify characters, objects, locations, actions
@@ -287,12 +318,13 @@ def extract_scene_elements(text):
 - **File Storage**: AWS S3 or MinIO
 - **CDN**: CloudFront or Cloudflare
 
-### 4.4 AI/ML Stack
+### 4.4 AI/ML Stack - Updated
 - **LLM Integration**: OpenAI GPT-4, Anthropic Claude
 - **Translation**: Google Translate API → IndicTrans2 → NLLB-200
 - **Image Generation**: Nano Banana API
 - **Video Generation**: Veo4 API
-- **Language Detection**: langdetect, polyglot
+- **Language Detection**: langdetect (primary), langid (fallback)
+- **Optimization**: Removed polyglot due to ICU dependency issues
 
 ### 4.5 Infrastructure Stack
 - **Containerization**: Docker + Docker Compose

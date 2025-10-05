@@ -6,7 +6,7 @@ import re
 import structlog
 from typing import Dict, Any, List
 from sqlalchemy.ext.asyncio import AsyncSession
-import aioredis
+import redis.asyncio as aioredis
 import unicodedata
 
 from app.core.config import settings
@@ -260,7 +260,7 @@ class TextPreprocessingService:
                 "sentence_segmentation",
                 "final_cleanup"
             ],
-            "supported_languages": settings.ALLOWED_LANGUAGES,
+            "supported_languages": settings.allowed_languages_list,
             "max_input_length": settings.MAX_INPUT_LENGTH,
             "min_input_length": settings.MIN_INPUT_LENGTH
         }
