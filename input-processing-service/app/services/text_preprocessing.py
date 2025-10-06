@@ -134,16 +134,17 @@ class TextPreprocessingService:
         return cleaned_text, info
     
     def _remove_special_characters(self, text: str) -> tuple[str, Dict[str, Any]]:
-        """Remove or replace special characters"""
+        """Remove or replace special characters while preserving Unicode text"""
         original_length = len(text)
         removed_chars = []
         
-        # Keep only letters, numbers, spaces, and common punctuation
-        allowed_pattern = r'[a-zA-Z0-9\s\.\,\!\?\;\:\-\(\)\[\]\{\}\"\'\/\\]'
+        # Keep letters (including Unicode), numbers, spaces, and common punctuation
+        # This pattern preserves Unicode characters including Telugu, Hindi, etc.
+        allowed_pattern = r'[\w\s\.\,\!\?\;\:\-\(\)\[\]\{\}\"\'\/\\]'
         
         cleaned_text = ""
         for char in text:
-            if re.match(allowed_pattern, char):
+            if re.match(allowed_pattern, char) or ord(char) > 127:  # Keep Unicode characters
                 cleaned_text += char
             else:
                 removed_chars.append(char)

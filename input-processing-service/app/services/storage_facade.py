@@ -15,6 +15,7 @@ from app.schemas.input_processing import (
     ProcessingStatusCreate,
     ProcessingStatusUpdate,
     ProcessingStatusResponse,
+    ProcessingPhaseStatus,
     ProcessingPhase,
     ProcessingStatus as ProcessingStatusEnum
 )
@@ -200,6 +201,58 @@ class InputStorageService:
         except Exception as e:
             logger.error("Failed to get processing status", input_id=input_id, error=str(e))
             raise DatabaseError(f"Failed to get processing status: {str(e)}")
+    
+    async def get_complete_processing_status(self, input_id: int) -> Optional[ProcessingStatusResponse]:
+        """Get complete processing status with all phases - extends get_processing_status for detailed responses"""
+        try:
+            # Try cache first
+            cached_data = await self.cache_manager.get_cached_status_summary(input_id)
+            if cached_data and cached_data.get('phases'):
+                return ProcessingStatusResponse(**cached_data)
+            
+            # Get all status records from repository
+            all_statuses = await self.status_repo.get_all_statuses_for_input(input_id)
+            
+            if not all_statuses:
+                return None
+            
+            # Build phases list from all records
+            phases = []
+            latest_status = all_statuses[-1]
+            
+            for status in all_statuses:
+                phases.append(ProcessingPhaseStatus(
+                    phase=status.phase,
+                    status=status.status,
+                    progress_percentage=status.progress_percentage,
+                    started_at=status.started_at,
+                    completed_at=status.completed_at,
+                    duration_seconds=status.duration_seconds,
+                    phase_data=status.phase_data,
+                    error_message=status.error_message,
+                    error_details=status.error_details
+                ))
+            
+            # Build complete response
+            response = ProcessingStatusResponse(
+                input_id=input_id,
+                status=latest_status.status,
+                current_phase=latest_status.phase,
+                progress_percentage=latest_status.progress_percentage,
+                phases=phases,
+                created_at=all_statuses[0].created_at,
+                updated_at=latest_status.created_at,
+                processed_at=latest_status.completed_at
+            )
+            
+            # Cache the complete result
+            await self.cache_manager.cache_status_summary(input_id, response.dict())
+            
+            return response
+            
+        except Exception as e:
+            logger.error("Failed to get complete processing status", input_id=input_id, error=str(e))
+            raise DatabaseError(f"Failed to get complete processing status: {str(e)}")
     
     async def update_language_detection_results(
         self,

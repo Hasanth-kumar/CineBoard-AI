@@ -19,23 +19,32 @@ router = APIRouter()
 @router.get("/status/{input_id}", response_model=ProcessingStatusResponse)
 async def get_processing_status(
     input_id: int,
+    detailed: bool = False,
     db: AsyncSession = Depends(get_db),
     redis: aioredis.Redis = Depends(get_redis)
 ):
     """
     Get processing status for a specific input record
+    
+    Args:
+        input_id: The input record ID
+        detailed: If True, returns complete phase data. If False, returns only latest status (default).
     """
     try:
         storage_service = InputStorageService(db, redis)
         
-        status = await storage_service.get_processing_status(input_id)
+        if detailed:
+            status = await storage_service.get_complete_processing_status(input_id)
+        else:
+            status = await storage_service.get_processing_status(input_id)
         
         if not status:
             raise HTTPException(status_code=404, detail="Input record not found")
         
         logger.info("Processing status retrieved", 
                    input_id=input_id,
-                   status=status.status)
+                   status=status.status,
+                   detailed=detailed)
         
         return status
         

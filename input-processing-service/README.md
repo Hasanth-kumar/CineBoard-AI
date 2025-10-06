@@ -9,6 +9,8 @@ This microservice handles the first phase of our video generation pipeline: proc
 - **Language Detection**: Verified working for Telugu, Hindi, and English with proper Unicode handling
 - **Translation Pipeline**: Google Translate API → NLLB-200 fallback system operational
 - **API Endpoints**: All endpoints tested and verified with proper error handling
+- **API Enhancement**: Status endpoint now supports detailed phase data retrieval
+- **Critical Issues Resolved**: Unicode character handling, Redis compatibility, PowerShell encoding
 - **Docker Infrastructure**: Complete containerization with PostgreSQL and Redis
 - **Production Readiness**: Ready for Phase 2 development and scaling
 
@@ -32,8 +34,22 @@ This microservice handles the first phase of our video generation pipeline: proc
 ## API Endpoints
 - `POST /api/v1/input/validate` - Validate input text
 - `POST /api/v1/input/process` - Complete input processing pipeline
-- `GET /api/v1/input/status/{id}` - Get processing status
+- `GET /api/v1/input/status/{id}` - Get processing status (supports `?detailed=true` for complete phase data)
 - `GET /health` - Health check endpoint
+
+### Status Endpoint Enhancement
+The status endpoint now supports two response modes:
+- **Default mode**: Returns latest status only (backward compatible)
+- **Detailed mode**: Returns complete phase data including language detection results, translation results, and confidence scores
+
+**Usage Examples:**
+```bash
+# Quick status check (existing behavior)
+GET /api/v1/input/status/123
+
+# Complete detailed response (new feature)
+GET /api/v1/input/status/123?detailed=true
+```
 
 ## Development Setup
 ```bash

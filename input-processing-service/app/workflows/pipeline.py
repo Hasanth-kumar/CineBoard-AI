@@ -32,6 +32,8 @@ async def process_input_pipeline(
                 text_length=len(text),
                 user_id=user_id)
     print(f"DEBUG: Pipeline started for input_id={input_id}, text='{text[:50]}...'")
+    print(f"DEBUG: Text bytes: {text.encode('utf-8')}")
+    print(f"DEBUG: Text repr: {repr(text)}")
     
     # Create new database session for background task
     async with AsyncSessionLocal() as db:

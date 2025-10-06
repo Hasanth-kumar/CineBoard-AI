@@ -6,11 +6,13 @@ This document provides a comprehensive workflow design for the video generation 
 
 ### ✅ CURRENT STATUS: WORKFLOW IMPLEMENTED + SRP REFACTOR (December 2024)
 - **Input Processing Workflow**: Fully operational with SRP-compliant architecture
-- **Language Detection Flow**: Verified working for Telugu, Hindi, and English
+- **Language Detection Flow**: Verified working for Telugu, Hindi, and English with proper Unicode handling
 - **Translation Pipeline**: Google Translate API → NLLB-200 fallback system operational
 - **Database Operations**: Optimized schema with proper Unicode support
 - **API Workflow**: All endpoints tested and verified with proper error handling
+- **API Enhancement**: Status endpoint enhanced with detailed phase data retrieval capability
 - **Docker Workflow**: Complete containerization with health checks and monitoring
+- **Critical Issues Resolved**: Unicode character handling, Redis compatibility, PowerShell encoding
 - **Production Readiness**: All workflows validated and ready for Phase 2 scaling
 
 ## 1. Complete End-to-End Workflow
@@ -97,6 +99,128 @@ class InputCollectionWorkflow:
             'next_phase': 'LANGUAGE_PROCESSING',
             'estimated_processing_time': '30-60 seconds'
         }
+```
+
+#### 1.1.1 Status Polling & Monitoring Workflow
+**State**: `STATUS_MONITORING`
+**Duration**: Continuous (2-3 second intervals)
+**Components**: Status Endpoint, Client Polling, Real-time Updates
+
+**🚀 ENHANCED STATUS API** (December 2024):
+- **Dual Response Modes**: Summary (default) and Detailed (on-demand)
+- **Backward Compatibility**: Existing clients continue to work unchanged
+- **Complete Phase Data**: Detailed mode provides full processing history
+
+```python
+# Enhanced Status Monitoring Workflow
+class StatusMonitoringWorkflow:
+    def __init__(self):
+        self.polling_interval = 2  # seconds
+        self.max_polling_time = 60  # seconds
+        self.status_endpoint = "http://localhost:8002/api/v1/input/status"
+    
+    async def monitor_processing_status(self, input_id: int, detailed: bool = False) -> Dict[str, Any]:
+        """Monitor processing status with enhanced response modes"""
+        
+        # Step 1: Start polling
+        start_time = time.time()
+        
+        while time.time() - start_time < self.max_polling_time:
+            # Step 2: Request status (with optional detailed mode)
+            endpoint = f"{self.status_endpoint}/{input_id}"
+            if detailed:
+                endpoint += "?detailed=true"
+            
+            response = await self._make_status_request(endpoint)
+            
+            if response['status'] in ['completed', 'failed']:
+                # Step 3: Return final status with complete data
+                return {
+                    'status': response['status'],
+                    'phases': response.get('phases', []),  # Complete phase data in detailed mode
+                    'processing_time': response.get('processing_time', 0),
+                    'final_results': self._extract_final_results(response)
+                }
+            
+            # Step 4: Wait before next poll
+            await asyncio.sleep(self.polling_interval)
+        
+        # Timeout handling
+        return {'status': 'timeout', 'error': 'Processing took too long'}
+    
+    def _extract_final_results(self, status_response: Dict[str, Any]) -> Dict[str, Any]:
+        """Extract final processing results from status response"""
+        if not status_response.get('phases'):
+            return {'error': 'No phase data available'}
+        
+        results = {}
+        for phase in status_response['phases']:
+            if phase['phase'] == 'language_detection':
+                results['detected_language'] = phase['phase_data'].get('language')
+                results['confidence'] = phase['phase_data'].get('confidence')
+            elif phase['phase'] == 'translation':
+                results['translated_text'] = phase['phase_data'].get('translated_text')
+                results['translation_method'] = phase['phase_data'].get('method')
+        
+        return results
+```
+
+**Status Response Modes:**
+
+1. **Summary Mode** (Default):
+```json
+{
+  "input_id": 123,
+  "status": "completed",
+  "current_phase": "preprocessing",
+  "progress_percentage": 100,
+  "phases": [],
+  "created_at": "2024-12-06T10:30:00Z",
+  "processed_at": "2024-12-06T10:30:45Z"
+}
+```
+
+2. **Detailed Mode** (`?detailed=true`):
+```json
+{
+  "input_id": 123,
+  "status": "completed",
+  "current_phase": "preprocessing",
+  "progress_percentage": 100,
+  "phases": [
+    {
+      "phase": "validation",
+      "status": "completed",
+      "phase_data": {"validation_result": "passed"}
+    },
+    {
+      "phase": "language_detection",
+      "status": "completed",
+      "phase_data": {
+        "language": "te",
+        "confidence": 0.95
+      }
+    },
+    {
+      "phase": "translation",
+      "status": "completed",
+      "phase_data": {
+        "translated_text": "I need to sleep",
+        "method": "google_translate"
+      }
+    },
+    {
+      "phase": "preprocessing",
+      "status": "completed",
+      "phase_data": {
+        "processed_text": "I need to sleep",
+        "steps": ["cleaning", "normalization"]
+      }
+    }
+  ],
+  "created_at": "2024-12-06T10:30:00Z",
+  "processed_at": "2024-12-06T10:30:45Z"
+}
 ```
 
 #### 1.2 Language Detection & Translation

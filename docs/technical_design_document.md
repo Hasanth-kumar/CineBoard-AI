@@ -4,13 +4,14 @@
 
 This document outlines the technical architecture and implementation strategy for a multilingual video generation platform that converts natural language scene descriptions into structured prompts for AI-powered image and video generation tools (Nano Banana, Veo4).
 
-### ✅ CURRENT STATUS: MVP COMPLETED + SRP REFACTOR (December 2024)
+### ✅ CURRENT STATUS: MVP COMPLETED + API ENHANCEMENT (December 2024)
 - **Phase 1 MVP**: Successfully completed with Single Responsibility Principle refactoring
 - **Input Processing Service**: Fully operational with SRP-compliant architecture
 - **Database Schema**: Fixed and optimized (language_confidence VARCHAR(20) issue resolved)
 - **Language Detection**: Verified working for Telugu, Hindi, and English with proper Unicode handling
 - **Translation Pipeline**: Google Translate API → NLLB-200 fallback system operational
 - **API Endpoints**: All endpoints tested and verified with proper error handling
+- **API Enhancement**: Status endpoint enhanced with detailed phase data retrieval capability
 - **Docker Infrastructure**: Complete containerization with PostgreSQL and Redis
 - **Production Readiness**: Ready for Phase 2 development and production deployment
 
@@ -310,6 +311,7 @@ def extract_scene_elements(text):
 - **Authentication**: JWT with refresh tokens
 - **API Documentation**: OpenAPI/Swagger
 - **Validation**: Pydantic (Python) or Joi (Node.js)
+- **API Enhancement**: Status endpoints support detailed phase data retrieval with query parameters
 
 ### 4.3 Database Stack
 - **Primary Database**: PostgreSQL 15+
@@ -333,6 +335,16 @@ def extract_scene_elements(text):
 - **Monitoring**: Prometheus + Grafana
 - **Logging**: ELK Stack (Elasticsearch, Logstash, Kibana)
 - **Message Queue**: Redis Streams or RabbitMQ
+
+### 4.6 API Design & Enhancement
+- **RESTful Design**: Standard HTTP methods and status codes
+- **Query Parameters**: Support for detailed response modes
+- **Backward Compatibility**: Default parameters maintain existing behavior
+- **Response Modes**: 
+  - **Summary Mode**: Quick status check (default)
+  - **Detailed Mode**: Complete phase data with results and metadata
+- **Error Handling**: Consistent error responses with proper HTTP status codes
+- **Documentation**: OpenAPI/Swagger with interactive testing
 
 ## 5. MVP Feature Set vs Future Roadmap
 

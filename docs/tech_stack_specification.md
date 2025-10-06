@@ -7,10 +7,12 @@ This document provides a comprehensive specification of the technology stack for
 ### ✅ CURRENT STATUS: TECH STACK IMPLEMENTED + SRP REFACTOR (December 2024)
 - **Backend Stack**: FastAPI + Python 3.11+ with SRP-compliant architecture
 - **Database Layer**: PostgreSQL with optimized schema and proper Unicode support
-- **Caching Layer**: Redis implementation with efficient data management
+- **Caching Layer**: Redis implementation with efficient data management (redis[hiredis] with redis.asyncio)
 - **API Layer**: RESTful endpoints with proper validation and error handling
+- **API Enhancement**: Status endpoints enhanced with detailed phase data retrieval capability
 - **Containerization**: Complete Docker setup with health checks and monitoring
 - **Language Processing**: Google Translate API → NLLB-200 fallback system operational
+- **Critical Fixes**: Unicode character handling, Redis compatibility (aioredis removed), PowerShell encoding
 - **Production Readiness**: All components tested and validated for Phase 2 scaling
 
 ## 1. Frontend Technology Stack
@@ -237,7 +239,8 @@ const store = configureStore({
   "asgi_server": "Uvicorn",
   "validation": "Pydantic V2",
   "documentation": "OpenAPI/Swagger",
-  "testing": "pytest + httpx"
+  "testing": "pytest + httpx",
+  "api_enhancement": "Status endpoints support detailed phase data retrieval"
 }
 ```
 
@@ -281,7 +284,95 @@ async def create_generation(
     return await generation_service.create_generation(request, current_user.id)
 ```
 
-#### 2.1.2 Improved Microservices Architecture - POST-SRP REFACTOR Design
+#### 2.1.2 API Enhancement Implementation
+
+**Enhanced Status Endpoint Design**:
+```python
+# Enhanced Status Endpoint with Dual Response Modes
+@router.get("/status/{input_id}", response_model=ProcessingStatusResponse)
+async def get_processing_status(
+    input_id: int,
+    detailed: bool = False,  # Query parameter for response mode
+    db: AsyncSession = Depends(get_db),
+    redis: aioredis.Redis = Depends(get_redis)
+):
+    """
+    Get processing status with enhanced response modes
+    
+    Args:
+        input_id: The input record ID
+        detailed: If True, returns complete phase data. If False, returns only latest status (default).
+    """
+    storage_service = InputStorageService(db, redis)
+    
+    if detailed:
+        # Return complete phase data including language detection and translation results
+        status = await storage_service.get_complete_processing_status(input_id)
+    else:
+        # Return summary status (backward compatible)
+        status = await storage_service.get_processing_status(input_id)
+    
+    return status
+```
+
+**Response Mode Specifications**:
+
+1. **Summary Mode** (Default - Backward Compatible):
+```json
+{
+  "input_id": 123,
+  "status": "completed",
+  "current_phase": "preprocessing",
+  "progress_percentage": 100,
+  "phases": [],
+  "created_at": "2024-12-06T10:30:00Z",
+  "processed_at": "2024-12-06T10:30:45Z"
+}
+```
+
+2. **Detailed Mode** (`?detailed=true`):
+```json
+{
+  "input_id": 123,
+  "status": "completed",
+  "current_phase": "preprocessing",
+  "progress_percentage": 100,
+  "phases": [
+    {
+      "phase": "validation",
+      "status": "completed",
+      "phase_data": {"validation_result": "passed"}
+    },
+    {
+      "phase": "language_detection",
+      "status": "completed",
+      "phase_data": {
+        "language": "te",
+        "confidence": 0.95
+      }
+    },
+    {
+      "phase": "translation",
+      "status": "completed",
+      "phase_data": {
+        "translated_text": "I need to sleep",
+        "method": "google_translate"
+      }
+    }
+  ],
+  "created_at": "2024-12-06T10:30:00Z",
+  "processed_at": "2024-12-06T10:30:45Z"
+}
+```
+
+**Technical Implementation Details**:
+- **Backward Compatibility**: Default `detailed=False` maintains existing behavior
+- **Performance**: Detailed mode uses existing `get_all_statuses_for_input()` repository method
+- **Caching**: Both modes use existing cache mechanisms
+- **Error Handling**: Consistent error responses across both modes
+- **Documentation**: OpenAPI/Swagger automatically documents the new parameter
+
+#### 2.1.3 Improved Microservices Architecture - POST-SRP REFACTOR Design
 
 ```python
 # Domain-Driven Service Architecture with SRP Compliance (Updated)
