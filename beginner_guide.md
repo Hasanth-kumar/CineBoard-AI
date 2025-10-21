@@ -7,14 +7,22 @@ Imagine you're a movie director who wants to create a video scene. Instead of hi
 **Example**: You type "A girl walks into a dark temple at midnight holding a candle. She looks scared." → Our system creates a professional video of exactly that scene.
 
 ## 🔄 CURRENT STATUS: PHASE 1 MVP IN PROGRESS + SRP REFACTOR (September 2025 Project Start)
-- **Platform Status**: In progress with Single Responsibility Principle compliance for input-processing-service
-- **Core Features**: Only input-processing-service implemented and tested
-- **Language Support**: Telugu, Hindi, and English planned for implementation
-- **Input Processing**: Optimized with SRP-compliant architecture
-- **Database Layer**: Planned schema with proper Unicode support
-- **API Layer**: Only input-processing endpoints tested and verified
-- **Docker Infrastructure**: Partial containerization in development
-- **Next Phase**: Complete remaining MVP services before Phase 2 enhancement
+- **Platform Status**: 🔄 IN PROGRESS with Single Responsibility Principle refactoring for input-processing-service
+- **Project Timeline**: Started September 2025, Target Completion Q1 2026
+- **Core Features**: 🔄 Input Processing Service being properly implemented
+- **Language Support**: 🔄 Planned for Telugu, Hindi, and English with proper Unicode handling
+- **Input Processing**: 🔄 Being implemented with SRP-compliant architecture
+- **Database Layer**: 🔄 Planned schema with proper Unicode support
+- **API Layer**: 🔄 Planned input-processing endpoints with proper error handling
+- **Docker Infrastructure**: 🔄 Planned containerization with PostgreSQL and Redis
+- **Next Phase**: ⚠️ Phase 2 GenAI Workflow Implementation (after MVP completion)
+
+## ⚠️ PHASE 2 GENAI WORKFLOW - PLANNED (Q2-Q3 2026)
+- **Current Focus**: Complete Phase 1 MVP Foundation first
+- **Next Priority**: Character Generation Service with Whisk AI integration (after MVP completion)
+- **Workflow Discovery**: Manual workflow validated (Characters → Keyframes → Video Clips → Voiceover → Final Video)
+- **Architecture**: SRP-compliant microservices ready for new services
+- **Database**: Extended schema planned for GenAI workflow tables
 
 ## 🏗️ System Architecture (Like Building a House)
 
@@ -26,13 +34,15 @@ Think of our platform like a **restaurant**:
 - **Technologies**: Next.js (like the furniture and decorations)
 - **What users do**: Type their scene description, see progress, download videos
 
-### Backend (The Kitchen) 🔧 RECENTLY REFACTORED
+### Backend (The Kitchen) 🔄 **IN PROGRESS**
 - **What it is**: The server that processes everything behind the scenes
 - **Like**: The kitchen where chefs prepare food
 - **Technologies**: FastAPI (like the cooking equipment)
 - **What it does**: Understands user input, generates videos, manages data
-- **✨ NEW**: Recently refactored following Single Responsibility Principle (SRP)
-- **Benefits**: Each module does one thing well, making the system more maintainable and scalable
+- **✨ STATUS**: 🔄 In progress with Single Responsibility Principle (SRP) refactoring
+- **Current Services**: 🔄 Input Processing Service being properly implemented
+- **Next Services**: ⚠️ Character Generation, Keyframe Generation, Video Generation (planned for Phase 2)
+- **Benefits**: Each module will do one thing well, making the system more maintainable and scalable
 
 ### Database (The Pantry)
 - **What it is**: Where we store all information

@@ -228,7 +228,7 @@ class InputStorageService:
                     started_at=status.started_at,
                     completed_at=status.completed_at,
                     duration_seconds=status.duration_seconds,
-                    phase_data=status.phase_data,
+                    phase_data=status.phase_data if status.phase_data else None,
                     error_message=status.error_message,
                     error_details=status.error_details
                 ))

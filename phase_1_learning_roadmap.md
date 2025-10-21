@@ -6,20 +6,28 @@
 **Team size**: 9 people
 **Your goal**: Be able to contribute meaningfully to MVP development
 
-## 🔄 PHASE 1 MVP IN PROGRESS + SRP REFACTOR (September 2025 Project Start)
-- **MVP Status**: In progress with Single Responsibility Principle refactoring for input-processing-service
-- **Input Processing Service**: Fully operational with SRP-compliant architecture
-- **Database Schema**: Planned schema with proper Unicode support
-- **Language Detection**: Planned for Telugu, Hindi, and English with proper Unicode handling
-- **Translation Pipeline**: Planned Google Translate API → NLLB-200 fallback system
-- **API Endpoints**: Only input-processing endpoints tested and verified with proper error handling
-- **Critical Issues**: Unicode character handling, Redis compatibility, PowerShell encoding planned for resolution
-- **Docker Infrastructure**: Partial containerization with PostgreSQL and Redis
-- **Production Readiness**: Planned for Phase 2 development and production deployment
+## 🔄 CURRENT STATUS: PHASE 1 MVP IN PROGRESS + SRP REFACTOR (September 2025 Project Start)
+- **MVP Status**: 🔄 IN PROGRESS with Single Responsibility Principle refactoring for input-processing-service
+- **Project Timeline**: Started September 2025, Target Completion Q1 2026
+- **Input Processing Service**: 🔄 Being properly implemented with SRP-compliant architecture
+- **Database Schema**: 🔄 Planned schema with proper Unicode support
+- **Language Detection**: 🔄 Planned for Telugu, Hindi, and English with proper Unicode handling
+- **Translation Pipeline**: 🔄 Planned Google Translate API → NLLB-200 fallback system
+- **API Endpoints**: 🔄 Planned input-processing endpoints with proper error handling
+- **Critical Issues**: 🔄 Unicode character handling, Redis compatibility, PowerShell encoding planned for resolution
+- **Docker Infrastructure**: 🔄 Planned containerization with PostgreSQL and Redis
+- **Production Readiness**: 🔄 Planned for Phase 2 development and production deployment
+
+## ⚠️ PHASE 2 GENAI WORKFLOW - PLANNED (Q2-Q3 2026)
+- **Current Focus**: Complete Phase 1 MVP Foundation first
+- **Next Priority**: Character Generation Service with Whisk AI integration (after MVP completion)
+- **Workflow Discovery**: Manual workflow validated (Characters → Keyframes → Video Clips → Voiceover → Final Video)
+- **Architecture**: SRP-compliant microservices ready for new services
+- **Database**: Extended schema planned for GenAI workflow tables
 
 ## 📚 Essential Learning Path (Priority Order) 🔄 MVP IN PROGRESS + SRP REFACTOR
 
-### 1. 🏗️ **System Design Fundamentals** (Week 1-2) 🔄 IN PROGRESS
+### 1. 🏗️ **System Design Fundamentals** 🔄 **IN PROGRESS**
 **Why**: You need to understand how all pieces fit together
 **🎉 STATUS**: In progress with SRP-compliant architecture for input-processing-service
 

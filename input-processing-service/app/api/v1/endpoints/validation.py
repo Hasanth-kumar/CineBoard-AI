@@ -10,7 +10,8 @@ from app.core.database import get_db
 from app.core.redis import get_redis
 from app.schemas.input_processing import (
     InputValidationRequest,
-    InputValidationResponse
+    InputValidationResponse,
+    ValidationStatus
 )
 from app.services.input_validation import InputValidationService
 
@@ -41,11 +42,23 @@ async def validate_input(
             session_id=request.session_id
         )
         
-        logger.info("Input validation completed", 
-                   status=validation_result.status,
-                   validation_id=validation_result.validation_id)
+        # Determine validation status
+        status = ValidationStatus.VALID if validation_result.is_valid else ValidationStatus.INVALID
         
-        return validation_result
+        # Create response
+        response = InputValidationResponse(
+            validation_id=f"val_{request.user_id}_{request.session_id or 'anonymous'}",
+            status=status,
+            validation_result=validation_result,
+            message="Validation completed successfully" if validation_result.is_valid else "Validation failed"
+        )
+        
+        logger.info("Input validation completed", 
+                   status=status.value,
+                   validation_id=response.validation_id,
+                   is_valid=validation_result.is_valid)
+        
+        return response
         
     except Exception as e:
         logger.error("Input validation failed", error=str(e))

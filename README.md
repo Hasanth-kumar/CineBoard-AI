@@ -1,489 +1,370 @@
-# CinBoard AI
+# CinBoard AI - Multilingual Video Generation Platform
 
 > **Transform your ideas into stunning videos with AI-powered multilingual video generation**
 
-CinBoard AI is a cutting-edge video generation platform that converts natural language descriptions into high-quality videos using advanced AI technology. Whether you're a content creator, marketer, educator, or business owner, CinBoard AI makes professional video creation accessible to everyone, regardless of technical expertise.
+CinBoard AI is a cutting-edge video generation platform that transforms natural language descriptions into professional videos using advanced AI technology. The platform specializes in **multilingual content creation** with deep **cultural context preservation**, making it uniquely positioned to serve global creators.
 
-## 🔄 CURRENT STATUS: PHASE 1 MVP IN PROGRESS + SRP REFACTOR (September 2025 Project Start)
-- **Phase 1 MVP**: In progress with Single Responsibility Principle refactoring for input-processing-service
-- **Input Processing Service**: Fully operational with SRP-compliant architecture
-- **Database Schema**: Planned schema with proper Unicode support
-- **Language Detection**: Planned for Telugu, Hindi, and English with proper Unicode handling
-- **Translation Pipeline**: Planned Google Translate API → NLLB-200 fallback system
-- **API Endpoints**: Only input-processing endpoints tested and verified with proper error handling
-- **Critical Issues**: Unicode character handling, Redis compatibility, PowerShell encoding planned for resolution
-- **Docker Infrastructure**: Partial containerization with PostgreSQL and Redis
-- **Production Readiness**: Planned for Phase 2 development and production deployment
+## 🎯 Project Overview
 
-## 🌟 Key Features
-
-### 🎯 **Multilingual Support**
-- **Native Language Processing**: Support for 20+ languages including English, Hindi, Telugu, Spanish, French, German, Japanese, and more
-- **Cultural Context Preservation**: Maintains cultural nuances and context during translation
-- **Voice Input Support**: Record or upload audio in any supported language
-- **Intelligent Language Detection**: Automatically detects input language with high accuracy
-
-### 🎨 **Advanced AI Generation**
-- **Structured Prompt Conversion**: Converts natural language into optimized AI prompts
-- **Multi-Model Pipeline**: Integrates Nano Banana API for image generation and Veo4 API for video creation
-- **Quality Assurance System**: Ensures consistent high-quality outputs with automatic validation
-- **Progressive Generation**: Real-time progress updates with preview generation
-
-### 🚀 **Professional Features**
-- **Multiple Quality Tiers**: From 720p standard to 4K premium quality
-- **Batch Processing**: Generate multiple videos simultaneously
-- **Custom Duration**: Videos from 30 seconds to 30 minutes
-- **Advanced Customization**: Style preferences, aspect ratios, and technical specifications
-- **Real-time Collaboration**: Team features for businesses and agencies
-
-### 🔧 **Enterprise-Ready**
-- **API Access**: RESTful API for third-party integrations
-- **White-label Solutions**: Custom branding and deployment options
-- **SSO Integration**: Enterprise authentication and access control
-- **Compliance**: SOC 2, GDPR, and HIPAA compliance ready
-- **99.9% Uptime SLA**: Enterprise-grade reliability
-
-## 🏗️ Architecture Overview (Updated with SRP Compliance)
-
-CinBoard AI is built on a modern microservices architecture designed for scalability, reliability, and performance. **Recently enhanced with Single Responsibility Principle (SRP) compliance for improved maintainability.**
-
-### **System Architecture (POST-SRP REFACTOR)**
+CinBoard AI implements a sophisticated GenAI pipeline that automates the entire video creation process:
 
 ```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Frontend      │    │   Mobile App    │    │   API Gateway   │
-│   (Next.js)     │    │ (React Native)  │    │   (Kong)        │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │                       │
-         └───────────────────────┼───────────────────────┘
-                                 │
-                    ┌─────────────────┐
-                    │ 🏆 SRP-Compliant│
-                    │ Microservices    │
-                    │ 🔧 REFACTORED    │
-                    └─────────────────┘
-                                 │
-         ┌───────────────────────┼───────────────────────┐
-         │                       │                       │
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│🏆 Input Process │    │ Scene Analysis  │    │ AI Generation   │
-│🔧 SRP-Compliant│    │   Service       │    │    Service      │
-│✨ REFACTORED    │    │                 │    │                 │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │                       │
-         └───────────────────────┼───────────────────────┘
-                                 │
-                    ┌─────────────────┐
-                    │   Data Layer    │
-                    │ (PostgreSQL +   │
-                    │ Redis + S3)     │
-                    └─────────────────┘
+Text Input → Storyboard → Characters → Keyframes → Video Clips → Voiceover → Final Video
 ```
 
-### **✨ Input Processing Service - SRP Refactor Benefits (September 2025)**
+### Core Mission
+Empower creators worldwide by converting their ideas into high-quality videos while preserving cultural nuances and supporting native languages including Telugu, Hindi, English, and 20+ others.
 
-**OLD Architecture**: Monolithic input processing with multiple responsibilities
-**NEW Architecture**: Clean separation of concerns with focused modules
+## 🚀 Current Status
 
-**Refactored Components**:
-```
-input-processing-service/
-├── 🏗️ workflows/
-│   └── pipeline.py - Single responsibility: workflow orchestration
-├── 🌐 endpoints/
-│   ├── validation.py - Single responsibility: HTTP validation requests
-│   ├── processing.py - Single responsibility: HTTP processing requests
-│   └── status.py - Single responsibility: HTTP status requests
-├── ⚙️ services/
-│   ├── translation/
-│   │   ├── providers/
-│   │   │   ├── google_translator.py - Google Translate API
-│   │   │   ├── indic_translator.py - IndicTrans2 translation
-│   │   │   ├── nllb_translator.py - NLLB translation
-│   │   │   └── hf_translator.py - HuggingFace models
-│   │   ├── strategy.py - Fallback chain management
-│   │   └── translation_facade.py - API compatibility
-│   └── repositories/
-│       ├── input_repository.py - InputRecord CRUD operations
-│       └── status_repository.py - ProcessingStatus CRUD operations
-├── 💾 cache/
-│   └── cache_manager.py - Centralized cache operations
-└── 🔗 storage_facade.py - API compatibility layer
-```
+### 🔄 Phase 1 MVP Foundation - IN PROGRESS
+**Timeline**: Started September 2025, Target Completion Q1 2026  
+**Status**: Active development
 
-**Benefits Achieved**:
-- 🧪 **Enhanced Testability**: Isolated components are easier to test
-- 🔍 **Improved Debugging**: Clear responsibility boundaries make issues easier to trace
-- 📈 **Better Scalability**: New providers/repositories can be added independently
-- ⬅️ **Backward Compatibility**: Existing APIs maintained through facade pattern
-- 🧩 **Reduced Complexity**: Each module has exactly one logical responsibility
+#### Currently Implementing
+- 🔄 **Input Processing Service**: Being properly implemented with SRP-compliant architecture
+- 🔄 **Multilingual Support**: Planned for Telugu, Hindi, English with Unicode handling
+- 🔄 **Translation Pipeline**: Planned Google Translate → NLLB-200 fallback system
+- 🔄 **Database Schema**: Planned optimized PostgreSQL with proper Unicode support
+- 🔄 **Docker Infrastructure**: Planned containerization with health checks
+- 🔄 **API Endpoints**: Planned RESTful API with comprehensive error handling
+- 🔄 **Monitoring**: Planned Prometheus metrics and structured logging
 
-### **Core Workflow**
+### ⚠️ Phase 2 - GenAI Workflow Implementation - PLANNED
+**Timeline**: Q2-Q3 2026 (6 months)  
+**Status**: Planning phase
 
-1. **Input Collection**: Users provide text or voice input in any supported language
-2. **Language Processing**: Automatic detection, translation, and cultural context preservation
-3. **Scene Understanding**: Advanced entity extraction, mood analysis, and prompt structuring
-4. **AI Generation**: Multi-stage generation with Nano Banana (images) and Veo4 (videos)
-5. **Quality Assurance**: Automated validation and enhancement
-6. **Delivery**: Secure storage and CDN distribution
+#### Planned Services
+- ⚠️ **Scene Analysis Service**: Entity extraction, mood analysis, camera cues
+- ⚠️ **Character Generation Service**: Whisk AI integration for consistent characters
+- ⚠️ **Keyframe Generation Service**: 1-3 keyframes per 8-second clip
+- ⚠️ **Video Generation Service**: Veo4 API integration
+- ⚠️ **Voiceover Generation Service**: Eleven Labs multilingual voice synthesis
+- ⚠️ **Video Composition Service**: Automated video stitching and assembly
 
-### **Technology Stack**
+#### User Interface Development
+- ⚠️ **Frontend Application**: Next.js web interface development
+- ⚠️ **User Authentication**: JWT-based authentication system
+- ⚠️ **Production Deployment**: Kubernetes and AWS infrastructure setup
 
-#### **Frontend**
-- **Framework**: Next.js 14 with TypeScript
-- **Styling**: Tailwind CSS with Headless UI components
-- **State Management**: Zustand for client state, TanStack Query for server state
-- **Real-time**: Socket.io for live updates
-- **Mobile**: React Native with Expo
+### ⚠️ Phase 3 - Advanced Features - PLANNED
+- **Mobile Applications**: iOS and Android apps
+- **Enterprise Features**: Team collaboration and API access
+- **Advanced AI Capabilities**: Emotion-aware voice synthesis, camera direction intelligence
 
-#### **Backend**
-- **Framework**: FastAPI (Python 3.11+)
-- **Authentication**: JWT with OAuth 2.0 support
-- **API Documentation**: OpenAPI/Swagger with automatic generation
-- **Validation**: Pydantic V2 for data validation
-- **Testing**: Pytest with comprehensive test coverage
+## 🌟 Key Strengths
 
-#### **AI/ML Services**
-- **Language Processing**: OpenAI GPT-4, Anthropic Claude, NLLB-200
-- **Image Generation**: Nano Banana API
-- **Video Generation**: Veo4 API
-- **Speech Recognition**: OpenAI Whisper
-- **Translation**: Google Translate, IndicTrans2
+### **Multilingual Excellence**
+- **Native Language Support**: Telugu, Hindi, English, Tamil, Bengali, Gujarati, Marathi, Kannada, Malayalam, Odia, Punjabi
+- **Cultural Context Preservation**: IndicTrans2 integration maintains cultural nuances
+- **Intelligent Translation**: Google Translate → IndicTrans2 → NLLB-200 fallback system
 
-#### **Infrastructure**
-- **Containerization**: Docker with Kubernetes orchestration
-- **Database**: PostgreSQL 15+ with Redis 7+ caching
-- **Storage**: AWS S3 with CloudFront CDN
-- **Monitoring**: Prometheus + Grafana, ELK Stack
-- **CI/CD**: GitHub Actions with automated testing
+### **Technical Architecture**
+- **SRP-Compliant Microservices**: Single Responsibility Principle enforced across all services
+- **Event-Driven Communication**: Asynchronous service orchestration
+- **Horizontal Scalability**: Independent service scaling
+- **Fault Tolerance**: Graceful degradation and error recovery
 
-## 🚀 Installation & Setup
+### **AI Integration**
+- **Character Consistency**: Maintains character appearance across scenes
+- **Professional Quality**: Enterprise-grade video output
+- **Intelligent Automation**: End-to-end pipeline automation
+- **Quality Assurance**: Automated validation and enhancement
 
-### **Prerequisites**
+## 🏗️ System Architecture
 
+CinBoard AI is built on a modern microservices architecture designed for scalability, reliability, and performance. The system implements Single Responsibility Principle (SRP) compliance across all services, ensuring maintainability and extensibility.
+
+### Microservices Overview
+- **Input Processing Service** ✅ - Text validation, language detection, translation
+- **Scene Analysis Service** 🔄 - Entity extraction, mood analysis, camera cues
+- **Character Generation Service** ⚠️ - Consistent character creation using Whisk AI
+- **Keyframe Generation Service** ⚠️ - Scene keyframe generation
+- **Video Generation Service** 🔄 - Veo4 integration for video creation
+- **Voiceover Generation Service** ⚠️ - Eleven Labs integration
+- **Video Composition Service** ⚠️ - Final video assembly
+- **Post-Processing Service** 🔄 - Quality enhancement and optimization
+
+### Technology Stack
+- **Backend**: FastAPI with Python 3.11+
+- **Database**: PostgreSQL with Redis caching
+- **AI Services**: Google Translate, NLLB-200, Whisk, Veo4, Eleven Labs
+- **Infrastructure**: Docker, Kubernetes, AWS S3
+- **Monitoring**: Prometheus, Grafana, structured logging
+
+## 🔄 End-to-End Workflow
+
+Our platform implements a sophisticated GenAI pipeline that automates the entire video creation process:
+
+### Detailed Pipeline Stages
+
+1. **Text Input Processing** ✅ - Multilingual text ingestion and validation
+2. **Scene Analysis** 🔄 - Entity extraction, mood analysis, temporal sequencing
+3. **Storyboard Generation** 🔄 - Automated scene breakdown and narrative structure
+4. **Character Generation** ⚠️ - Consistent character creation using Whisk AI
+5. **Keyframe Generation** ⚠️ - 1-3 keyframes per 8-second video clip
+6. **Video Clip Generation** 🔄 - Veo4-powered video creation from keyframes
+7. **Voiceover Generation** ⚠️ - Eleven Labs integration for multilingual audio
+8. **Video Composition** ⚠️ - Automated stitching and final video assembly
+9. **Quality Assurance** 🔄 - Automated validation and enhancement
+10. **Delivery** 🔄 - Secure storage and CDN distribution
+
+## 🚀 Quick Start
+
+### Prerequisites
 - Docker and Docker Compose
-- Node.js 18+ and npm/yarn
 - Python 3.11+
-- PostgreSQL 15+
-- Redis 7+
+- PostgreSQL 14+
+- Redis 6+
 
-### **Quick Start with Docker**
+### Local Development Setup
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/your-org/cinboard-ai.git
-   cd cinboard-ai
+   git clone https://github.com/cinboard-ai/platform.git
+   cd platform
    ```
 
-2. **Set up environment variables**
+2. **Set up Input Processing Service**
    ```bash
-   cp .env.example .env
+   cd input-processing-service
+   cp env.example .env
    # Edit .env with your configuration
    ```
 
-3. **Start the services**
+3. **Start services with Docker Compose**
    ```bash
    docker-compose up -d
    ```
 
-4. **Initialize the database**
+4. **Verify installation**
    ```bash
-   docker-compose exec api python -m alembic upgrade head
+   # Health check
+   curl http://localhost:8002/health
+   
+   # API documentation
+   open http://localhost:8002/docs
+   
+   # Test API endpoint
+   curl -X POST "http://localhost:8002/api/v1/input/process" \
+     -H "Content-Type: application/json" \
+     -d '{"text": "నాకు ఎగరాలి అని ఉంది", "user_id": 1, "session_id": "test"}'
    ```
 
-5. **Access the application**
-   - Frontend: http://localhost:3000
-   - API Documentation: http://localhost:8000/docs
-   - Admin Panel: http://localhost:8000/admin
-
-### **Manual Installation**
-
-#### **Backend Setup**
-
-1. **Create virtual environment**
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
-
-2. **Install dependencies**
-   ```bash
-   cd input-processing-service
-   pip install -r requirements.txt
-   ```
-
-3. **Set up database**
-   ```bash
-   # Start PostgreSQL and Redis
-   # Update database configuration in .env
-   python -m alembic upgrade head
-   ```
-
-4. **Run the API server**
-   ```bash
-   uvicorn main:app --reload --host 0.0.0.0 --port 8000
-   ```
-
-#### **Frontend Setup**
-
-1. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-2. **Set up environment variables**
-   ```bash
-   cp .env.local.example .env.local
-   # Edit .env.local with your API endpoints
-   ```
-
-3. **Start the development server**
-   ```bash
-   npm run dev
-   ```
-
-### **Environment Variables**
-
-Create a `.env` file with the following variables:
+### Environment Variables
 
 ```env
-# Database
-DATABASE_URL=postgresql://user:password@localhost:5432/cinboard_ai
-REDIS_URL=redis://localhost:6379
+# Service Configuration
+SERVICE_NAME=input-processing-service
+SERVICE_VERSION=1.0.0
+SERVICE_PORT=8002
+DEBUG=false
 
-# AI Services
-OPENAI_API_KEY=your_openai_api_key
-ANTHROPIC_API_KEY=your_anthropic_api_key
-NANO_BANANA_API_KEY=your_nano_banana_api_key
-VEO4_API_KEY=your_veo4_api_key
+# Database Configuration
+DATABASE_URL=postgresql://user:password@localhost:5432/input_processing
+REDIS_URL=redis://localhost:6379/0
 
-# Authentication
-JWT_SECRET_KEY=your_jwt_secret_key
-JWT_ALGORITHM=HS256
-JWT_ACCESS_TOKEN_EXPIRE_MINUTES=30
+# AI Service API Keys
+GOOGLE_TRANSLATE_API_KEY=your_google_translate_api_key
+HUGGINGFACE_API_KEY=your_huggingface_api_key
+NLLB_ENDPOINT=https://api-inference.huggingface.co/models/facebook/nllb-200-distilled-600M
 
-# Storage
+# Security
+JWT_SECRET=your_jwt_secret_key_here
+ENCRYPTION_KEY=your_encryption_key_here
+
+# AWS Configuration
 AWS_ACCESS_KEY_ID=your_aws_access_key
 AWS_SECRET_ACCESS_KEY=your_aws_secret_key
-AWS_S3_BUCKET=your_s3_bucket
 AWS_REGION=us-east-1
-
-# Monitoring
-PROMETHEUS_ENDPOINT=http://localhost:9090
-GRAFANA_ENDPOINT=http://localhost:3001
+S3_BUCKET_NAME=cinboard-ai-media
 ```
 
-## 📖 Usage Instructions
+## 📖 API Usage
 
-### **Basic Video Generation**
+### Current API Endpoints (Input Processing Service)
 
-1. **Sign up or log in** to your CinBoard AI account
-2. **Describe your video** in the text input field:
-   ```
-   "A romantic sunset scene with two people walking on a beach, 
-   holding hands, with golden hour lighting and gentle waves"
-   ```
-3. **Select your preferences**:
-   - Quality: 720p, 1080p, or 4K
-   - Duration: 30 seconds to 10 minutes
-   - Style: Cinematic, Documentary, or Artistic
-4. **Click Generate** and watch the progress in real-time
-5. **Download your video** when generation is complete
+#### 1. Input Validation
+```bash
+curl -X POST "http://localhost:8002/api/v1/input/validate" \
+  -H "Content-Type: application/json" \
+  -d '{"text": "నాకు ఎగరాలి అని ఉంది", "user_id": 1, "session_id": "test"}'
+```
 
-### **Advanced Features**
+#### 2. Input Processing
+```bash
+curl -X POST "http://localhost:8002/api/v1/input/process" \
+  -H "Content-Type: application/json" \
+  -d '{"text": "నాకు ఎగరాలి అని ఉంది", "user_id": 1, "session_id": "test"}'
+```
 
-#### **Voice Input**
-- Click the microphone icon to record your description
-- Upload audio files in supported formats (MP3, WAV, M4A)
-- The system automatically transcribes and processes your input
+#### 3. Processing Status
+```bash
+curl "http://localhost:8002/api/v1/input/status/41?detailed=true"
+```
 
-#### **Batch Processing**
-- Upload a CSV file with multiple descriptions
-- Set batch preferences for consistent styling
-- Monitor progress across all generations
-- Download individual videos or as a zip file
-
-#### **API Integration**
+### Python SDK Example
 ```python
 import requests
 
-# Generate a video via API
-response = requests.post('https://api.cinboard.ai/v1/generate', 
-    headers={'Authorization': 'Bearer YOUR_API_KEY'},
+# Process multilingual text
+response = requests.post('http://localhost:8002/api/v1/input/process', 
     json={
-        'description': 'A futuristic cityscape at night',
-        'quality': '4K',
-        'duration': 60,
-        'style': 'cinematic'
+        'text': 'నాకు ఎగరాలి అని ఉంది',  # Telugu: "I want to fly"
+        'user_id': 1,
+        'session_id': 'test-session'
     }
 )
 
-generation_id = response.json()['generation_id']
+result = response.json()
+print(f"Input ID: {result['input_id']}")
+print(f"Status: {result['status']}")
 
-# Check generation status
-status = requests.get(f'https://api.cinboard.ai/v1/generate/{generation_id}',
-    headers={'Authorization': 'Bearer YOUR_API_KEY'}
+# Check processing status
+status_response = requests.get(f"http://localhost:8002/api/v1/input/status/{result['input_id']}")
+status = status_response.json()
+print(f"Detected Language: {status.get('detected_language')}")
+print(f"Translation: {status.get('translation_result')}")
+```
+
+### Planned Complete Workflow API
+```python
+# Future end-to-end video generation
+response = requests.post('https://api.cinboard.ai/api/v1/generate/video', 
+    headers={'Authorization': 'Bearer YOUR_API_KEY'},
+    json={
+        'text': 'నాకు ఎగరాలి అని ఉంది',
+        'user_id': 1,
+        'generation_settings': {
+            'quality': 'high',
+            'language': 'auto',
+            'voice_style': 'natural',
+            'visual_style': 'realistic'
+        }
+    }
 )
 ```
 
-### **Team Collaboration**
-
-1. **Create a team** and invite members
-2. **Set permissions** for different team roles
-3. **Share projects** and collaborate on video creation
-4. **Use team templates** for consistent branding
-5. **Track usage** and manage team resources
-
 ## 🗺️ Development Roadmap
 
-### **Phase 1: MVP (Months 1-3)**
-- ✅ Core video generation functionality
-- ✅ Multilingual support (English, Hindi, Telugu)
-- ✅ Basic user authentication and profiles
-- ✅ Simple web interface
-- ✅ API foundation
-- ✅ Input processing service with Docker deployment
-- ✅ Language detection (langdetect + langid fallback)
-- ✅ Redis caching with modern async client
-- ✅ Docker Compose local development setup
-- ✅ Environment variable configuration system
-- ✅ Health check endpoints and service monitoring
+### Phase 1: MVP Foundation 🔄 **IN PROGRESS**
+**Timeline**: Started September 2025, Target Completion Q1 2026  
+**Status**: Active development
 
-## 🔧 Recent Development Updates
+#### Currently Implementing
+- 🔄 **Input Processing Service**: Being properly implemented with SRP-compliant architecture
+- 🔄 **Multilingual Support**: Planned for Telugu, Hindi, English with Unicode handling
+- 🔄 **Translation Pipeline**: Planned Google Translate → NLLB-200 fallback system
+- 🔄 **Database Schema**: Planned optimized PostgreSQL with Unicode support
+- 🔄 **API Infrastructure**: Planned RESTful API with comprehensive error handling
+- 🔄 **Docker Infrastructure**: Planned containerization with health checks
+- 🔄 **Monitoring**: Planned Prometheus metrics and structured logging
 
-### **Dependency Optimizations**
-- **Redis Client**: Migrated from `aioredis==2.0.0` to `redis[hiredis]==5.0.1` for Python 3.11 compatibility
-- **Language Detection**: Replaced `polyglot` with `langid` to eliminate ICU dependency issues
-- **Import Strategy**: Updated all Redis imports to use `redis.asyncio as aioredis` pattern
+#### Key Goals
+- **Multilingual Excellence**: Native support for Telugu, Hindi, English
+- **Technical Foundation**: SRP-compliant microservices architecture
+- **Production Readiness**: Scalable, maintainable, and well-documented
 
-### **Resolved Development Issues**
-- ✅ Fixed `TypeError: duplicate base class TimeoutError` in aioredis
-- ✅ Resolved PyICU installation failures in Docker
-- ✅ Updated Dockerfile to remove problematic ICU system dependencies
-- ✅ Optimized language detection for scene descriptions (95%+ accuracy)
-- ✅ Streamlined Docker Compose setup for local development
+### Phase 2: GenAI Workflow Implementation ⚠️ **PLANNED**
+**Timeline**: Q2-Q3 2026 (6 months)  
+**Status**: Planning phase
 
-### **Architecture Improvements**
-- **Simplified Dependencies**: Removed complex ICU dependencies while maintaining functionality
-- **Better Fallback Strategy**: Implemented langdetect → langid → English fallback chain
-- **Modern Redis Client**: Using latest redis package with async capabilities
-- **Docker Optimization**: Cleaner container builds without system library conflicts
+#### Planned Services
+- ⚠️ **Scene Analysis Service**: Entity extraction, mood analysis, camera cues
+- ⚠️ **Character Generation Service**: Whisk AI integration for consistent characters
+- ⚠️ **Keyframe Generation Service**: 1-3 keyframes per 8-second clip
+- ⚠️ **Video Generation Service**: Veo4 API integration
+- ⚠️ **Voiceover Generation Service**: Eleven Labs multilingual voice synthesis
+- ⚠️ **Video Composition Service**: Automated video stitching and assembly
 
-### **Phase 2: Enhancement (Months 4-6)**
-- 🔄 Advanced customization options
-- 🔄 Voice input and processing
-- 🔄 Batch processing capabilities
-- 🔄 Real-time progress updates
-- 🔄 Social features and sharing
+#### User Interface Development
+- ⚠️ **Frontend Application**: Next.js web interface development
+- ⚠️ **User Authentication**: JWT-based authentication system
+- ⚠️ **Production Deployment**: Kubernetes and AWS infrastructure setup
 
-### **Phase 3: Enterprise (Months 7-12)**
-- 📋 Team collaboration features
-- 📋 API access and documentation
-- 📋 White-label solutions
-- 📋 Advanced security and compliance
-- 📋 Custom model training
+#### Technical Milestones
+- **End-to-End Pipeline**: Complete text-to-video generation workflow
+- **Character Consistency**: Maintain character appearance across scenes
+- **Quality Assurance**: Automated quality validation and enhancement
+- **Performance Optimization**: Caching and parallel processing
 
-### **Phase 4: Global Scale (Year 2+)**
-- 📋 Support for 50+ languages
-- 📋 Mobile applications (iOS/Android)
-- 📋 Marketplace for templates and styles
-- 📋 Advanced AI features (GPT-5, real-time generation)
-- 📋 Global CDN and regional data centers
+### Phase 3: Advanced Features & Enhancement ⚠️ **PLANNED**
+**Timeline**: Q4 2026-Q1 2027 (6 months)  
+**Status**: Strategic planning
 
-## 🛠️ Challenges & Solutions
+#### Advanced AI Capabilities
+- 🔄 **Emotion-Aware Voice Synthesis**: Context-sensitive voice generation
+- 🔄 **Camera Direction Intelligence**: Advanced cinematography automation
+- 🔄 **Cultural Context Preservation**: Enhanced IndicTrans2 integration
+- 🔄 **Style Transfer**: Artistic style application to generated content
 
-### **Technical Challenges**
+### Phase 4: Enterprise & Scale ⚠️ **PLANNED**
+**Timeline**: Q2-Q3 2027 (6 months)  
+**Status**: Strategic planning
 
-#### **AI Generation Quality & Reliability**
-- **Challenge**: Inconsistent generation quality and AI service reliability
-- **Solution**: Multi-model generation with automatic fallback, quality scoring algorithms, and circuit breaker patterns
-- **Implementation**: Quality assurance system with pre/post-generation validation and alternative model fallbacks
+#### Enterprise Features
+- 🔄 **Team Collaboration**: Workspace management and user roles
+- 🔄 **API Access**: Comprehensive API for enterprise integration
+- 🔄 **White-label Solutions**: Customizable branding and deployment
+- 🔄 **Advanced Analytics**: Detailed usage and performance metrics
 
-#### **Multilingual Processing**
-- **Challenge**: Translation quality and cultural context preservation
-- **Solution**: Specialized translation models for different language families, cultural context databases, and human review for critical translations
-- **Implementation**: Cultural adaptation engine with context preservation and validation algorithms
+## 📊 Competitive Advantages
 
-#### **Performance & Scalability**
-- **Challenge**: High latency in AI generation and resource exhaustion under load
-- **Solution**: Progressive generation with real-time updates, intelligent caching, and auto-scaling with predictive algorithms
-- **Implementation**: Low-latency generation system with preview generation and resource management
-
-### **Business Challenges**
-
-#### **Cost Management**
-- **Challenge**: Unpredictable AI generation costs and competitive pricing pressure
-- **Solution**: Real-time cost prediction, tier-based usage limits, and dynamic pricing models
-- **Implementation**: Cost management system with budget controls and optimization algorithms
-
-#### **User Adoption & Retention**
-- **Challenge**: Complex onboarding and user retention
-- **Solution**: Interactive tutorials, gamification, and personalized recommendations
-- **Implementation**: User onboarding system with contextual help and engagement campaigns
-
-### **Security & Compliance**
-- **Challenge**: User data protection and content moderation
-- **Solution**: End-to-end encryption, role-based access control, and automated content analysis
-- **Implementation**: Comprehensive security system with audit logging and privacy management
-
-## 💰 Monetization Plans
-
-### **Pricing Tiers**
-
-#### **Free Tier** - $0/month
-- 5 generations per month
-- 720p quality, 30-second max duration
-- Basic languages (English, Hindi, Telugu)
-- Community support
-- Watermarked videos
-
-#### **Creator Tier** - $19/month
-- 100 generations per month
-- 1080p quality, 5-minute max duration
-- All supported languages
-- Email support
-- No watermark
-- Advanced customization
-
-#### **Pro Tier** - $49/month
-- 500 generations per month
-- 4K quality, 10-minute max duration
-- Priority processing
-- Team collaboration (up to 5 users)
-- Advanced analytics
-- Limited API access
-
-#### **Business Tier** - $149/month
-- 2,000 generations per month
-- 4K quality, 30-minute max duration
-- Full API access
-- Team collaboration (up to 25 users)
-- White-label options
-- Dedicated account manager
-
-#### **Enterprise Tier** - Custom pricing
-- Unlimited generations
-- Custom quality and duration
-- Full white-label solution
-- On-premise deployment
-- 24/7 dedicated support
-- Custom model training
-- 99.9% uptime SLA
-
-### **Revenue Streams**
-
-- **Subscription Revenue (60%)**: Monthly/annual subscriptions with tiered pricing
-- **Usage-Based Revenue (25%)**: Pay-per-generation for additional usage
-- **Enterprise Revenue (10%)**: Custom solutions and white-label offerings
-- **Marketplace Revenue (3%)**: Commission from user-generated content
-- **API Revenue (2%)**: Third-party API access and integration fees
+### **vs. Morphic and Competitors**
+- **Multilingual First**: Native support for underserved markets
+- **Cultural Intelligence**: Context preservation for regional content
+- **Character Consistency**: Maintains character appearance across scenes
+- **Accessible Pricing**: Professional quality at creator-friendly prices
+- **Global Reach**: Serves markets competitors ignore
 
 ### **Market Positioning**
+- **Primary**: Multilingual content creators (especially Indian/Asian markets)
+- **Secondary**: Cost-conscious professionals seeking enterprise alternatives
+- **Tertiary**: Educational institutions and small businesses
 
-- **Competitive Advantage**: 50% lower cost than competitors with better quality
-- **Unique Value**: Only platform offering true multilingual AI video generation
-- **Target Market**: Global businesses, content creators, and educational institutions
-- **Growth Strategy**: Focus on ease of use, cultural adaptation, and enterprise features
+## 🎯 Use Cases
+
+### **Content Creators**
+- YouTube video generation in native languages
+- Social media content creation
+- Educational video production
+
+### **Businesses**
+- Marketing video creation
+- Training material development
+- Product demonstration videos
+
+### **Educational Institutions**
+- Multilingual educational content
+- Language learning materials
+- Cultural storytelling projects
+
+## 📈 Success Metrics
+
+### **Technical Metrics**
+- **System Uptime**: >99.9%
+- **API Response Time**: <200ms average
+- **Generation Success Rate**: >90%
+- **Multilingual Accuracy**: >95% for supported languages
+
+### **Business Metrics**
+- **User Adoption**: Target 10K+ users in Year 1
+- **Revenue Growth**: $1.2M ARR by end of Year 1
+- **Market Share**: 10%+ in multilingual video generation market
+
+## 💰 Monetization Strategy
+
+### **Revenue Streams**
+- **Subscription Revenue**: Tiered pricing (Free, Pro, Enterprise)
+- **Usage-Based Pricing**: Pay-per-video generation
+- **Enterprise Solutions**: White-label licensing and custom development
+- **API Access**: Usage-based API pricing
+
+### **Pricing Tiers**
+- **Free Tier**: Basic features with usage limits
+- **Pro Tier**: Advanced features for content creators
+- **Enterprise Tier**: Full features for businesses
+- **Custom Tier**: Tailored solutions for large organizations
 
 ## 🤝 Contributing
 
@@ -513,31 +394,25 @@ We welcome contributions from the community! Here's how you can help:
 
 1. **Fork the repository**
    ```bash
-   git clone https://github.com/your-username/cinboard-ai.git
-   cd cinboard-ai
+   git clone https://github.com/cinboard-ai/platform.git
+   cd platform
    ```
 
-2. **Create a feature branch**
+2. **Set up development environment**
    ```bash
-   git checkout -b feature/your-feature-name
-   ```
-
-3. **Make your changes**
-   - Follow the coding standards
-   - Add tests for new functionality
-   - Update documentation as needed
-
-4. **Run tests**
-   ```bash
-   # Backend tests
    cd input-processing-service
-   pytest
-
-   # Frontend tests
-   npm test
+   cp env.example .env
+   # Edit .env with your configuration
+   docker-compose up -d
    ```
 
-5. **Submit a pull request**
+3. **Run tests**
+   ```bash
+   cd input-processing-service
+   pytest tests/
+   ```
+
+4. **Submit a pull request**
    - Provide a clear description of changes
    - Reference any related issues
    - Ensure all tests pass
@@ -545,58 +420,39 @@ We welcome contributions from the community! Here's how you can help:
 ### **Coding Standards**
 
 - **Python**: Follow PEP 8, use type hints, and include docstrings
-- **TypeScript**: Use strict mode, prefer interfaces over types
 - **Testing**: Maintain >80% test coverage
 - **Documentation**: Update README and API docs for new features
 - **Commits**: Use conventional commit messages
 
-### **Issue Reporting**
+## 🔗 Quick Links
 
-When reporting issues, please include:
-- Clear description of the problem
-- Steps to reproduce
-- Expected vs actual behavior
-- Environment details (OS, browser, version)
-- Screenshots or error logs if applicable
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-### **MIT License Summary**
-
-- ✅ Commercial use allowed
-- ✅ Modification allowed
-- ✅ Distribution allowed
-- ✅ Private use allowed
-- ❌ No liability or warranty provided
-
-### **Third-Party Licenses**
-
-This project uses several third-party libraries and services. Please refer to the individual license files in the `licenses/` directory for specific terms and conditions.
-
-### **AI Service Terms**
-
-Usage of AI services (OpenAI, Anthropic, Nano Banana, Veo4) is subject to their respective terms of service and usage policies. Please review these terms before using the platform.
-
----
+- [System Architecture](docs/architecture.md) - Detailed technical architecture
+- [GenAI Workflow](docs/workflow.md) - Complete pipeline documentation
+- [API Reference](docs/api_reference.md) - REST API documentation
+- [Database Schema](docs/database_schema.md) - Data model documentation
+- [Deployment Guide](docs/deployment.md) - Setup and configuration
+- [Future Plans](docs/future_plan.md) - Roadmap and enhancements
 
 ## 📞 Support & Contact
 
 - **Documentation**: [docs.cinboard.ai](https://docs.cinboard.ai)
 - **Community**: [Discord Server](https://discord.gg/cinboard-ai)
 - **Email**: support@cinboard.ai
-- **Twitter**: [@CinBoardAI](https://twitter.com/cinboardai)
-- **LinkedIn**: [CinBoard AI](https://linkedin.com/company/cinboard-ai)
+- **GitHub**: [CinBoard AI Repository](https://github.com/cinboard-ai/platform)
 
-## 🙏 Acknowledgments
+## 📄 License
 
-- OpenAI for GPT-4 and Whisper APIs
-- Anthropic for Claude API
-- Nano Banana for image generation
-- Veo4 for video generation
-- The open-source community for various libraries and tools
-- Our beta users for valuable feedback and testing
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+### **MIT License Summary**
+- ✅ Commercial use allowed
+- ✅ Modification allowed
+- ✅ Distribution allowed
+- ✅ Private use allowed
+- ❌ No liability or warranty provided
+
+### **AI Service Terms**
+Usage of AI services (Google Translate, NLLB-200, Whisk AI, Veo4, Eleven Labs) is subject to their respective terms of service and usage policies. Please review these terms before using the platform.
 
 ---
 
